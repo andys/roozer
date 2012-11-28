@@ -56,8 +56,9 @@ Roozer::Application.routes.draw do
   # Note: This route will make all actions in every controller accessible via GET requests.
   # match ':controller(/:action(/:id))(.:format)'
   
-  root :to => 'transactions#show'
-  match '*path' => 'transactions#show', :via => :get
-  match '*path' => 'transactions#create', :via => :post
-  match '*path' => 'transactions#destroy', :via => :delete
+  root :to => 'paths#show'
+  match '*path' => 'paths#show', via: :get, as: 'path'
+  match '*path' => 'paths#create', via: :post
+  match '*path' => 'paths#update', via: :put
+  match '*path' => 'paths#destroy', via: :delete
 end
