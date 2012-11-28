@@ -1,0 +1,8 @@
+---
+environment: production
+daemonize: true
+timeout: 10
+port: 2987
+max_persistent_conns: 100
+threaded: true
+no-epoll: true

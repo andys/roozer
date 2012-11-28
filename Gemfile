@@ -38,6 +38,7 @@ gem 'jquery-rails'
 # gem 'debugger'
 
 gem 'fraggle-block'
+gem 'thin'
 
 group :development, :test do
   gem 'turn'
