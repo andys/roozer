@@ -33,6 +33,7 @@ class PathsControllerTest < ActionController::TestCase
     post :create, path: 'test/4', format:'json', value: '{"my":"test"}'
     assert_response 201
     assert_equal({"path"=>{"name"=>"/test/4", "rev"=>nil, "type"=>"file", "value"=>{"my"=>"test"}}}, json_response)
+    assert_equal({"my"=>"test"}.to_json, $doozer.get('/test/4').value)
   end
 
   test 'do not create invalid file' do
@@ -66,6 +67,8 @@ class PathsControllerTest < ActionController::TestCase
     put :update, path: 'test/9', format:'json', value: '{"my":"test"}'
     puts response.body
     assert_response 204
+    
+    assert_equal({"my"=>"test"}.to_json, $doozer.get('/test/9').value)
   end
 
   test 'update nonexisting file returns 404' do
@@ -74,4 +77,16 @@ class PathsControllerTest < ActionController::TestCase
     end
   end
 
+  test 'create overwrites old file if already exists' do
+    post :create, path: 'test/11', format:'json', value: '{"my":"test"}'
+    assert_response 201
+    
+    post :create, path: 'test/11', format:'json', value: '{"my":"test2"}'
+    assert_response 201
+    
+    assert_equal({"my"=>"test2"}.to_json, $doozer.get('/test/11').value)
+  end
+
+
 end
+
