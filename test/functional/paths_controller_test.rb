@@ -75,6 +75,4 @@ class PathsControllerTest < ActionController::TestCase
     assert_equal({"my"=>"test"}.to_json, $doozer.get('/test/11').value)
   end
 
-
 end
-

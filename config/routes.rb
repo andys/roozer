@@ -57,8 +57,8 @@ Roozer::Application.routes.draw do
   # match ':controller(/:action(/:id))(.:format)'
   
   root :to => 'paths#show'
-  match '*p' => 'paths#show', via: :get, as: 'path'
-  match '*p' => 'paths#create', via: :post
-  match '*p' => 'paths#update', via: :put
-  match '*p' => 'paths#destroy', via: :delete
+  match '*p' => 'paths#show', via: :get, as: 'path', format:false
+  match '*p' => 'paths#create', via: :post, format:false
+  match '*p' => 'paths#update', via: :put, format:false
+  match '*p' => 'paths#destroy', via: :delete, format:false
 end
