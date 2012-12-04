@@ -86,6 +86,10 @@ class Path
     self.new(*args).save
   end
   
+  def self.delete_all!
+    $doozer.walk('/**').map(&:path).each {|p| $doozer.del(p, Path.current_rev) unless p =~ /^\/ctl\// }
+  end
+  
 end
 
 =begin
