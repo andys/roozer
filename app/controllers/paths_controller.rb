@@ -10,23 +10,23 @@ class PathsController < ApplicationController
 
   
   def show
-    logger.info('blah1')
     path = Path.find(@path)
-    logger.info('blah2')
     respond_with(path)
-    logger.info('blah3')
   end
 
   def create
-    logger.info(params.inspect)
     path = Path.create(params.merge(name: @path))
     respond_with(path)
   end
 
   def update
-    path = Path.find(@path)
-    path.update_attributes(params)
-    respond_with(path)
+    begin
+      path = Path.find(@path)
+      path.update_attributes(params)
+      respond_with(path)
+    rescue ActiveRecord::RecordNotFound
+      create
+    end
   end
   
   def destroy
@@ -47,12 +47,12 @@ protected
   private
 
   def render_not_found(exception)
-    logger.info(exception) # for logging 
+    #logger.info(exception) # for logging 
     render json: {:error => "404"}, status: 404
   end
 
   def render_error(exception)
-    logger.info(exception) # for logging
+    #logger.info(exception) # for logging
     respond_to do |format|
       render json: {:error => "500"}, status: 500
     end
