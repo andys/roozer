@@ -8,7 +8,6 @@ class PathsController < ApplicationController
   rescue_from ActionController::UnknownController, :with => :render_not_found
   rescue_from ActionController::UnknownAction, :with => :render_not_found
 
-  
   def show
     path = Path.find(@path)
     respond_with(path)
@@ -22,7 +21,7 @@ class PathsController < ApplicationController
   def update
     begin
       path = Path.find(@path)
-      path.update_attributes(params)
+      path.update_attributes(params.merge(name: @path))
       respond_with(path)
     rescue ActiveRecord::RecordNotFound
       create
@@ -40,11 +39,9 @@ class PathsController < ApplicationController
 
 protected
   def cleanup_path
-    @path = '/' + params[:p].to_s.split(/\/+/).select(&:present?).join('/')
+    @path = '/' + params[:p].to_s.gsub(/_/,'-').split(/\/+/).select(&:present?).join('/')
+    true
   end
-    
-
-  private
 
   def render_not_found(exception)
     #logger.info(exception) # for logging 
