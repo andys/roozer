@@ -1,3 +1,0 @@
-
-$doozer = Fraggle::Block.connect
-
