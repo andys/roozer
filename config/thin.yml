@@ -1,7 +1,6 @@
 ---
 environment: production
-daemonize: true
-timeout: 10
+timeout: 15
 port: 2987
 max_persistent_conns: 100
 threaded: true
