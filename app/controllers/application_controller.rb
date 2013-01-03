@@ -1,7 +1,7 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery
   before_filter do
-    $doozer.reconnect
+    Roozer::Application.clear_doozer
     true
   end
 end

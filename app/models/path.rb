@@ -27,24 +27,24 @@ class Path
   
   def save
     if valid?
-      resp = $doozer.set self.name, value.to_json, (attribute(:rev) || 0)
+      resp = Roozer::Application.doozer.set self.name, value.to_json, (attribute(:rev) || 0)
       errors.add(:name, "already exists") if resp.err_code == Fraggle::Block::Response::Err::REV_MISMATCH
     end
     self
   end
   
   def destroy
-    $doozer.del self.name, self.class.current_rev
+    Roozer::Application.doozer.del self.name, self.class.current_rev
   end
   
   def self.find(path)
     rev = current_rev
-    resp = $doozer.get path, rev
+    resp = Roozer::Application.doozer.get path, rev
     
     if resp.err_code == Fraggle::Block::Response::Err::ISDIR
       subdirs = []
       while resp.err_code != Fraggle::Block::Response::Err::RANGE
-        resp = $doozer.getdir(path, rev, subdirs.length).first
+        resp = Roozer::Application.doozer.getdir(path, rev, subdirs.length).first
         subdirs << resp.path if resp.path
       end
       new(name: path, type: 'dir', value: subdirs)
@@ -62,7 +62,7 @@ class Path
   end
   
   def self.current_rev
-    $doozer.rev.rev
+    Roozer::Application.doozer.rev.rev
   end
 
   attribute_method_suffix '='
@@ -87,7 +87,11 @@ class Path
   end
   
   def self.delete_all!
-    $doozer.walk('/**').map(&:path).each {|p| $doozer.del(p, Path.current_rev) unless p =~ /^\/ctl\// }
+    Roozer::Application.doozer.walk('/**').map(&:path).each {|p| Roozer::Application.doozer.del(p, Path.current_rev) unless p =~ /^\/ctl\// }
+  end
+  
+  def as_json(opts={})
+    super({root: false}.merge(opts))
   end
   
 end
@@ -95,13 +99,13 @@ end
 =begin
 
 
-1.9.3-p286 :028 > $doozer.set('/test/123', 'test', nil)
+1.9.3-p286 :028 > Roozer::Application.doozer.set('/test/123', 'test', nil)
  => <Fraggle::Block::Response tag: 0, err_code: MISSING_ARG(7)> 
-1.9.3-p286 :029 > $doozer.set('/test/123', 'test', 0)
+1.9.3-p286 :029 > Roozer::Application.doozer.set('/test/123', 'test', 0)
  => <Fraggle::Block::Response tag: 0, rev: 501> 
-1.9.3-p286 :030 > $doozer.set('/test/123', 'test', 0)
+1.9.3-p286 :030 > Roozer::Application.doozer.set('/test/123', 'test', 0)
  => <Fraggle::Block::Response tag: 0, err_code: REV_MISMATCH(5)> 
-1.9.3-p286 :031 > $doozer.set('/test/123', 'test', 501)
+1.9.3-p286 :031 > Roozer::Application.doozer.set('/test/123', 'test', 501)
  => <Fraggle::Block::Response tag: 0, rev: 504> 
 
 

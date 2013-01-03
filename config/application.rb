@@ -18,6 +18,14 @@ end
 
 module Roozer
   class Application < Rails::Application
+  
+    def self.doozer
+      Thread.current[:doozer_connection] ||= Fraggle::Block.connect
+    end
+    def self.clear_doozer
+      Thread.current[:doozer_connection] = nil
+    end
+  
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.

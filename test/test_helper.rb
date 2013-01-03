@@ -9,8 +9,10 @@ class ActiveSupport::TestCase
   
   def cleanup_previous_test_data
     # delete previous test data
-    $doozer.walk('/test/**').each do |file|
-      $doozer.del(file.path, Path.current_rev)
+    Roozer::Application.clear_doozer
+    
+    Roozer::Application.doozer.walk('/test/**').each do |file|
+      Roozer::Application.doozer.del(file.path, Path.current_rev)
     end
   end
 end
