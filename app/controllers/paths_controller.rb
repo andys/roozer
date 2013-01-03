@@ -6,7 +6,7 @@ class PathsController < ApplicationController
   rescue_from ActiveRecord::RecordNotFound, :with => :render_not_found
   rescue_from ActionController::RoutingError, :with => :render_not_found
   rescue_from ActionController::UnknownController, :with => :render_not_found
-  rescue_from ActionController::UnknownAction, :with => :render_not_found
+  rescue_from ::AbstractController::ActionNotFound, :with => :render_not_found
 
   def show
     path = Path.find(@path)

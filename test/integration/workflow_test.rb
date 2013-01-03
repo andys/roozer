@@ -12,7 +12,6 @@ class WorkflowTest < ActionDispatch::IntegrationTest
     
     json_post('/test/integration/1', value: {'my' => 'test'})
     assert_equal 201, response.status
-    puts json_response.inspect
   end
   
 protected
