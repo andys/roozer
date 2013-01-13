@@ -1,0 +1,30 @@
+#!/usr/bin/env ruby
+require 'socket'
+require 'timeout'
+
+myips = `hostname -I`.chomp.split(/\s+/)
+doozer_port = 8046
+
+# read ip addresses from db/servers.txt
+raise "Starting in single server mode: Cannot open db/servers.txt" unless File.readable?("db/servers.txt")
+cluster_hosts = File.read("db/servers.txt").lines.map(&:strip).select {|l| l =~ /^\d+\.\d+\.\d+\.\d+$/  }
+other_hosts = cluster_hosts - myips
+
+
+# the IP to bind to for THIS server is the intersection of this machine's ips with the db/servers.txt list.
+me = (myips & cluster_hosts).first || myips.first
+
+# remove hosts from the list if they seem to be down (IO.close returns nil)
+other_hosts.delete_if do |host|
+  Timeout::timeout(30) { TCPSocket.new(host, doozer_port).close } rescue true  
+end
+
+cluster_conf = other_hosts.map {|h| "-a #{h}:8046" }.join(' ')
+tls_conf = if File.readable?("db/doozer_server.crt") && File.readable?("db/doozer_server.key")
+  '-tlscert="db/doozer_server.crt" -tlskey="db/doozer_server.key"'
+end
+
+
+cmd = ".go/bin/doozerd -timeout=90 -pulse=3 -c roozer #{cluster_conf} -l #{me}:#{doozer_port} -w 127.0.0.1:8047 #{tls_conf}"
+puts cmd
+exec "#{cmd} 2>&1 | grep -v '^DOOZER'"
