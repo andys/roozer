@@ -1,0 +1,2 @@
+openssl req -new -batch -nodes -keyout doozer_server.key -out doozer_server.csr -newkey rsa:1024
+openssl x509 -req -in doozer_server.csr -signkey doozer_server.key -out doozer_server.crt
