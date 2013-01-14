@@ -32,6 +32,12 @@ GEM
     arel (3.0.2)
     beefcake (0.3.7)
     builder (3.0.4)
+    capistrano (2.14.1)
+      highline
+      net-scp (>= 1.0.0)
+      net-sftp (>= 2.0.0)
+      net-ssh (>= 2.0.14)
+      net-ssh-gateway (>= 1.1.0)
     daemons (1.1.9)
     erubis (2.7.0)
     eventmachine (1.0.0)
@@ -39,6 +45,7 @@ GEM
       thor (>= 0.13.6)
     fraggle-block (0.2.0)
       beefcake (~> 0.3)
+    highline (1.6.15)
     hike (1.2.1)
     i18n (0.6.1)
     journey (1.0.4)
@@ -53,6 +60,13 @@ GEM
     mime-types (1.19)
     minitest (4.4.0)
     multi_json (1.5.0)
+    net-scp (1.0.4)
+      net-ssh (>= 1.99.1)
+    net-sftp (2.0.5)
+      net-ssh (>= 2.0.9)
+    net-ssh (2.6.3)
+    net-ssh-gateway (1.1.0)
+      net-ssh (>= 1.99.1)
     polyglot (0.3.3)
     rack (1.4.3)
     rack-cache (1.2)
@@ -101,6 +115,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  capistrano
   foreman
   fraggle-block
   jquery-rails
