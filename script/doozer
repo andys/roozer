@@ -9,6 +9,7 @@ doozer_port = 8046
 raise "Starting in single server mode: Cannot open db/servers.txt" unless File.readable?("db/servers.txt")
 cluster_hosts = File.read("db/servers.txt").lines.map(&:strip).select {|l| l =~ /^\d+\.\d+\.\d+\.\d+$/  }
 other_hosts = cluster_hosts - myips
+num_other_hosts = other_hosts.length
 
 
 # the IP to bind to for THIS server is the intersection of this machine's ips with the db/servers.txt list.
@@ -24,7 +25,17 @@ tls_conf = if File.readable?("db/doozer_server.crt") && File.readable?("db/dooze
   '-tlscert="db/doozer_server.crt" -tlskey="db/doozer_server.key"'
 end
 
-
+fork do
+  sleep 1 while (TCPSocket.new(me, doozer_port).close rescue true)  # wait for doozer to come up
+  # if we are the first host to start up in the cluster, add the the control nodes for other hosts
+  if other_hosts.length == 0
+    puts "No other hosts are up - creating control nodes"
+    (1..num_other_hosts).each do |num|
+      `echo -n | .go/bin/doozer -a "doozer:?ca=#{me}:#{doozer_port}" add /ctl/cal/#{num}`
+    end
+  end
+end
+                          
 cmd = ".go/bin/doozerd -timeout=90 -pulse=3 -c roozer #{cluster_conf} -l #{me}:#{doozer_port} -w 127.0.0.1:8047 #{tls_conf}"
 puts cmd
 exec "#{cmd} 2>&1 | grep -v '^DOOZER'"
