@@ -6,8 +6,14 @@ myips = `hostname -I`.chomp.split(/\s+/)
 doozer_port = 8046
 
 # read ip addresses from db/servers.txt
-raise "Starting in single server mode: Cannot open db/servers.txt" unless File.readable?("db/servers.txt")
-cluster_hosts = File.read("db/servers.txt").lines.map(&:strip).select {|l| l =~ /^\d+\.\d+\.\d+\.\d+$/  }
+
+
+cluster_hosts = if File.readable?("db/servers.txt")
+  File.read("db/servers.txt").lines.map(&:strip).select {|l| l =~ /^\d+\.\d+\.\d+\.\d+$/  }
+else
+  puts "Starting in single server mode: Cannot open db/servers.txt"
+  myips = ['127.0.0.1']
+end
 other_hosts = cluster_hosts - myips
 num_other_hosts = other_hosts.length
 
