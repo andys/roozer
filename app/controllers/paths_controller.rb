@@ -1,12 +1,16 @@
 class PathsController < ApplicationController
-  skip_before_filter :verify_authenticity_token
   respond_to :json
   before_filter :cleanup_path
-  rescue_from Exception, :with => :render_error
+  rescue_from Exception do |exception|
+    logger.error("Error: #{exception.inspect}")
+    logger.error(exception.backtrace.join("\n  "))
+    render text:exception.inspect, status:500
+  end
   rescue_from ActiveRecord::RecordNotFound, :with => :render_not_found
   rescue_from ActionController::RoutingError, :with => :render_not_found
   rescue_from ActionController::UnknownController, :with => :render_not_found
   rescue_from ::AbstractController::ActionNotFound, :with => :render_not_found
+
 
   def show
     path = Path.find(@path)
