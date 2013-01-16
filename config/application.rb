@@ -20,7 +20,8 @@ module Roozer
   class Application < Rails::Application
   
     def self.doozer
-      Thread.current[:doozer_connection] ||= Fraggle::Block.connect
+      @myip ||= `hostname -I`.chomp.split(/\s+/).first
+      Thread.current[:doozer_connection] ||= Fraggle::Block.connect "doozer:?ca=#{@myip}:8046&ca=127.0.0.1:8046"
     end
     def self.clear_doozer
       Thread.current[:doozer_connection] = nil
