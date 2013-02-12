@@ -43,7 +43,7 @@ class PathsController < ApplicationController
 
 protected
   def cleanup_path
-    @path = '/' + params[:p].to_s.gsub(/_/,'-').split(/\/+/).select(&:present?).join('/')
+    @path = '/' + params[:p].to_s.split(/\/+/).select(&:present?).join('/')
     true
   end
 

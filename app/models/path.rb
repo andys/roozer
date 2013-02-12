@@ -4,7 +4,7 @@ class Path
   include ActiveModel::AttributeMethods
   include ActiveModel::Validations::Callbacks
 
-  validates_format_of :name, with:/^[\/\-\.a-z0-9]*$/i, message: 'must only contain ASCII letters, numbers, . or -'
+  validates_format_of :name, with:/^[\x20-\x7F]*$/i, message: 'must only contain ASCII printables'
   validates_inclusion_of :type, :in =>['file', 'directory'], :message => 'must be a file or directory'
   validates_presence_of :name
   validates_numericality_of :rev, only_integer: true, allow_nil: true, greater_than_or_equal_to: 0
@@ -12,46 +12,62 @@ class Path
   def self.default_attributes
     {'name' => nil, 'type' => 'file', 'value' => nil, 'rev' => nil}
   end
+  
+  def self.decode_name(n)
+    n.gsub(/\.([0-9A-F]{2})\./) {|match| $1.hex.chr } if n
+  end
+  
+  def encoded_name
+    self.class.encode_name(name)
+  end
+  
+  def self.encode_name(n)
+    n.gsub(/[^\/0-9A-Z\-]/i) {|match| '.%02X.' % match.ord } if n.respond_to?(:gsub)
+  end
  
   def initialize(attributes={})
     @attributes = HashWithIndifferentAccess.new
-    self.class.default_attributes.merge(attributes).each do |k,v|
-      send('attribute=', k,v)
-    end
+    self.class.default_attributes.merge(attributes).each {|k,v| send('attribute=',k,v) }
   end
   
   def update_attributes(attributes={})
-    attributes.each {|k,v| send('attribute=', k,v) }
+    attributes.each {|k,v| send('attribute=',k,v) }
     save
   end
   
   def save
     if valid?
-      resp = Roozer::Application.doozer.set self.name, value.to_json, (attribute(:rev) || 0)
+      resp = Roozer::Application.doozer.set encoded_name, value.to_json, (attribute(:rev) || 0)
       errors.add(:name, "already exists") if resp.err_code == Fraggle::Block::Response::Err::REV_MISMATCH
     end
     self
   end
   
   def destroy
-    Roozer::Application.doozer.del self.name, self.class.current_rev
+    Roozer::Application.doozer.del encoded_name, self.class.current_rev
   end
   
   def self.find(path)
     rev = current_rev
-    resp = Roozer::Application.doozer.get path, rev
+    encoded_path = encode_name(path)
+    resp = Roozer::Application.doozer.get encoded_path, rev
     
     if resp.err_code == Fraggle::Block::Response::Err::ISDIR
       subdirs = []
+      n = 0
       while resp.err_code != Fraggle::Block::Response::Err::RANGE
-        resp = Roozer::Application.doozer.getdir(path, rev, subdirs.length).first
-        subdirs << resp.path if resp.path
+        resp = Roozer::Application.doozer.getdir(encoded_path, rev, n).first
+        subdirs << decode_name(resp.path) if resp.path
+        n += 1
       end
       new(name: path, type: 'dir', value: subdirs)
+      
     elsif resp.err_code
       raise "Doozer Error Code #{resp.err_code}"
+      
     elsif resp.rev == 0 && resp.value.blank?
       raise ActiveRecord::RecordNotFound.new('Path not found')
+      
     else
       new(name: path, type: 'file', value: JSON.parse_any(resp.value), rev: resp.rev)
     end
@@ -95,18 +111,3 @@ class Path
   end
   
 end
-
-=begin
-
-
-1.9.3-p286 :028 > Roozer::Application.doozer.set('/test/123', 'test', nil)
- => <Fraggle::Block::Response tag: 0, err_code: MISSING_ARG(7)> 
-1.9.3-p286 :029 > Roozer::Application.doozer.set('/test/123', 'test', 0)
- => <Fraggle::Block::Response tag: 0, rev: 501> 
-1.9.3-p286 :030 > Roozer::Application.doozer.set('/test/123', 'test', 0)
- => <Fraggle::Block::Response tag: 0, err_code: REV_MISMATCH(5)> 
-1.9.3-p286 :031 > Roozer::Application.doozer.set('/test/123', 'test', 501)
- => <Fraggle::Block::Response tag: 0, rev: 504> 
-
-
-=end

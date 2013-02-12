@@ -20,9 +20,10 @@ class PathsControllerTest < ActionController::TestCase
   test 'directory listing' do
     Roozer::Application.doozer.set('/test/2', '', 0)
     Roozer::Application.doozer.set('/test/3', '', 0)
+    Roozer::Application.doozer.set('/test/fancy.2E.chars-encoding.5F.test', '', 0)
     get :show, p: 'test', format:'json'
     assert_response 200
-    assert_equal({"name"=>"/test", "rev"=>nil, "type"=>"dir", "value"=>["2", "3"]} , json_response)
+    assert_equal({"name"=>"/test", "rev"=>nil, "type"=>"dir", "value"=>["2", "3", 'fancy.chars-encoding_test']} , json_response)
   end
 
   test 'create valid file' do
@@ -38,8 +39,22 @@ class PathsControllerTest < ActionController::TestCase
     )
   end
 
+  test 'create a funkily-named file' do
+    post :create, p: 'test/fancy.chars-encoding_test', format:'json', value: {"funky" =>"test"}
+    assert_response 201
+    assert_equal(
+      {"name"=>"/test/fancy.chars-encoding_test", "rev"=>nil, "type"=>"file", "value"=>{"funky"=>"test"}},
+      json_response
+    )
+    assert_equal(
+      {"funky"=>"test"}.to_json,
+      Roozer::Application.doozer.get('/test/fancy.2E.chars-encoding.5F.test').value
+    )
+  end
+
+
   test 'do not create invalid file' do
-    post :create, p: 'invalidpath!', format:'json', value: '{}'
+    post :create, p: "invalidpath\a", format:'json', value: '{}'
     assert_response 422
   end
 
