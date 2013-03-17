@@ -13,7 +13,7 @@ ssh_options[:keys] = [ENV["SSH_KEY"]] if ENV["SSH_KEY"]
 namespace :foreman do
   desc "Export the Procfile to Ubuntu's upstart scripts"
   task :export, :roles => :app do
-    run "cd #{deploy_to}/current && sudo bundle exec foreman export upstart /etc/init -u ubuntu"
+    run "cd #{deploy_to}/current && sudo bundle exec foreman export upstart /etc/init -u ubuntu -a roozer"
   end
 
   desc "Start the application services"
@@ -40,4 +40,4 @@ end
 
 after "deploy:update", "foreman:export"
 after "deploy:restart", "deploy:cleanup"
-after "deploy:symlink", "after_symlink"
+after "deploy:create_symlink", "after_symlink"
