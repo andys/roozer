@@ -2,7 +2,7 @@ require "bundler/capistrano"
 
 set :deploy_via, :remote_cache
 set :application, "roozer"
-set :repository,  "git://github.com/andys/roozer.git"
+set :repository,  'git@github.com:andys/roozer.git'
 set :deploy_to, "/home/ubuntu/roozer"
 set :scm, :git
 role :app
